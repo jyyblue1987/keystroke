@@ -121,7 +121,8 @@ namespace keystroke
 
         private static void getWordList()
         {
-            string result = WebHttpUtils.getResponse("http://" + "keystroke.nuntius.me" + "/restapi.php?action=wordlist", "", "");
+            string url = "http://" + SERVER_ADDRESS + "/restapi.php?action=wordlist";
+            string result = WebHttpUtils.getResponse(url, "", "");
             if (string.IsNullOrEmpty(result))
             {
                 return;
